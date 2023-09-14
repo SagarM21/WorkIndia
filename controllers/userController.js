@@ -11,14 +11,17 @@ const authUser = asyncHandler(async (req, res) => {
   if (user && (await user.matchPassword(password))) {
     res.json({
       _id: user._id,
-      username: user.username,
-      email: user.email,
-      isAdmin: user.isAdmin,
       token: generateToken(user._id),
+      status: "Login Successful",
     });
   } else {
-    res.status(401);
-    throw new Error("Invalid email or password");
+    res
+      .status(401)
+      .json({
+        status: "Incorrect username/password provided. Please retry",
+        status_code: "401",
+      });
+    // throw new Error("Invalid email or password");
   }
 });
 
@@ -31,8 +34,8 @@ const registerUser = asyncHandler(async (req, res) => {
   const userExists = await User.findOne({ email });
 
   if (userExists) {
-    res.status(400);
-    throw new Error("User already exists");
+    res.status(400).json({ msg: "User already exists" });
+    // throw new Error("User already exists");
   }
 
   const user = await User.create({
@@ -44,10 +47,9 @@ const registerUser = asyncHandler(async (req, res) => {
   if (user) {
     res.status(201).json({
       _id: user._id,
-      username: user.username,
-      email: user.email,
-      isAdmin: user.isAdmin,
-      token: generateToken(user._id),
+      status: "Account successfully created",
+      //   token: generateToken(user._id),
+      status_code: 200,
     });
   } else {
     res.status(400);
