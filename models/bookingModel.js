@@ -23,6 +23,18 @@ const bookingSchema = new mongoose.Schema(
       type: [Number], // Array to store seat numbers
       required: true,
     },
+    arrival_time_at_source: {
+      type: String,
+      required: true,
+    },
+    arrival_time_at_destination: {
+      type: String,
+      required: true,
+    },
+    train_name: {
+      type: String,
+      required: true,
+    },
   },
   {
     timestamps: true,

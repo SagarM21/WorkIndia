@@ -108,6 +108,9 @@ const bookTrain = asyncHandler(async (req, res) => {
       user: user_id,
       booking_id,
       seat_numbers: bookedSeatNumbers,
+      arrival_time_at_source: train.arrival_time_at_source,
+      arrival_time_at_destination: train.arrival_time_at_destination,
+      train_name: train.train_name,
     });
 
     train.seat_capacity -= no_of_seats;
