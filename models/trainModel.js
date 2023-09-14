@@ -30,6 +30,10 @@ const trainSchema = mongoose.Schema(
       type: String,
       required: true,
     },
+    current_seat_availability: {
+      type: Number,
+      required: true,
+    },
   },
   {
     timestamps: true,
