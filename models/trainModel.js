@@ -18,6 +18,10 @@ const trainSchema = mongoose.Schema(
       type: Number,
       required: true,
     },
+    train_number: {
+      type: Number,
+      required: true,
+    },
     arrival_time_at_source: {
       type: String,
       required: true,
