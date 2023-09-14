@@ -2,6 +2,9 @@ const asyncHandler = require("express-async-handler");
 
 const Train = require("../models/trainModel");
 const generateRandomTrainCode = require("../utils/generateTrainCode");
+const generateBookingID = require("../utils/generateBookingId");
+const shuffleSeats = require("../utils/shuffleSeats");
+const Booking = require("../models/bookingModel");
 
 // DESC: Private/admin
 // /api/train/create
@@ -63,4 +66,64 @@ const getAvailability = asyncHandler(async (req, res) => {
   }
 });
 
-module.exports = { createTrain, getAvailability };
+const bookTrain = asyncHandler(async (req, res) => {
+  try {
+    const { train_number } = req.params;
+    const { user_id, no_of_seats } = req.body;
+
+    const train = await Train.findById({ _id: train_number });
+    if (!train) {
+      return res.status(404).json({ message: "Train not found" });
+    }
+
+    if (train.seat_capacity < no_of_seats) {
+      return res.status(400).json({ message: "Not enough available seats" });
+    }
+
+    const allSeatNumbers = Array.from(
+      { length: train.seat_capacity },
+      (_, i) => i + 1
+    );
+
+    shuffleSeats(allSeatNumbers);
+
+    const bookedSeatNumbers = [];
+    while (bookedSeatNumbers.length < no_of_seats) {
+      const nextSeatNumber = allSeatNumbers.pop();
+
+      // Check if this seat number is already booked
+      const isAlreadyBooked = await Booking.findOne({
+        train: train._id,
+        seat_numbers: nextSeatNumber,
+      });
+
+      if (!isAlreadyBooked) {
+        bookedSeatNumbers.push(nextSeatNumber);
+      }
+    }
+    const booking_id = generateBookingID();
+
+    const booking = new Booking({
+      train: train._id,
+      user: user_id,
+      booking_id,
+      seat_numbers: bookedSeatNumbers,
+    });
+
+    train.seat_capacity -= no_of_seats;
+
+    await booking.save();
+    await train.save();
+
+    return res.status(200).json({
+      message: "Seat booked successfully",
+      booking_id,
+      seat_numbers: bookedSeatNumbers,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
+module.exports = { createTrain, getAvailability, bookTrain };
